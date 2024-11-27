@@ -55,7 +55,7 @@ def update_user(id:int, user_request: UserRequest, db: Session = Depends(get_db)
     user = db.query(User).filter(User.id == id).first()
     if not user:
         raise HTTPException(status_code=404, detail="Usuário não encontrado")
-    for key, value in user_request.dict().items():
+    for key, value in user_request.model_dump().items():
         setattr(user, key, value)
     db.commit()
     db.refresh(user)
