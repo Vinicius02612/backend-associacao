@@ -12,6 +12,8 @@ router = APIRouter(prefix="/solicitacoes")
 @router.get("/", response_model=List[SolicitacaoResponse])
 def get_solicitacoes(db:Session = Depends(get_db)) -> List[Solicitacao]:
     solicitacoes = db.query(Solicitacao).all()
+    if not solicitacoes:
+        raise HTTPException(status_code=404, detail="Não há solicitações cadastradas")
     return solicitacoes
 
 @router.post("/", response_model=SolicitacaoResponse, status_code=201)
@@ -23,15 +25,15 @@ def post_solicitacoes(solicitacao: SolicitacaoRequest, db: Session = Depends(get
     db.commit()
     db.refresh(new_solicitacao)
 
-    return Solicitacao(**new_solicitacao.model_dump())
+    return new_solicitacao
 
 
 @router.put("/{id}", response_model=SolicitacaoResponse)
-def solicitation_update(id:int, solicitacao: SolicitacaoRequest, db: Session = Depends(get_db)) -> Solicitacao:
+def solicitation_update(id:int, solicitacao_request: SolicitacaoRequest, db: Session = Depends(get_db)) -> Solicitacao:
     solicitacao = db.query(Solicitacao).filter(Solicitacao.id == id).first()
     if not solicitacao:
         raise HTTPException(status_code=404, detail="Solicitação não encontrada")
-    for key, value in solicitacao.dict().items():
+    for key, value in solicitacao_request.model_dump().items():
         setattr(solicitacao, key, value)
    
     db.commit()
@@ -43,4 +45,4 @@ def solicitation_delete(id:int, db: Session = Depends(get_db)):
     solicitacao = db.query(Solicitacao).filter(Solicitacao.id == id).first()
     db.delete(solicitacao)
     db.commit()
-    return None
+    return solicitacao
