@@ -30,11 +30,11 @@ def post_projetos(projetos: ProjetosRequest, db: Session = Depends(get_db)) -> P
     return new_projetos
 
 @router.put("/{id}", response_model=ProjetosResponse)
-def projetos_update(id:int, projetos: ProjetosRequest, db: Session = Depends(get_db)) -> Projetos:
+def projetos_update(id:int, projetos_request: ProjetosRequest, db: Session = Depends(get_db)) -> Projetos:
     projetos = db.query(Projetos).filter(Projetos.id == id).first()
     if not projetos:
         raise HTTPException(status_code=404, detail="Projeto não encontrado")
-    for key, value in projetos.dict().items():
+    for key, value in projetos_request.model_dump().items():
         setattr(projetos, key, value)
    
     db.commit()
@@ -47,9 +47,11 @@ def projetos_delete(id:int, db: Session = Depends(get_db)):
     projetos = db.query(Projetos).filter(Projetos.id == id).first()
     db.delete(projetos)
     db.commit()
-    return None
+    return projetos
 
 @router.get("/{titulo}", response_model=ProjetosResponse)
 def get_projetos_by_titulo(titulo:str, db:Session = Depends(get_db)) -> ProjetosResponse:
     projetos = db.query(Projetos).filter(Projetos.titulo == titulo).first()
+    if not projetos:
+        raise HTTPException(status_code=404, detail="Projeto não encontrado")
     return projetos
