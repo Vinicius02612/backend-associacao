@@ -1,0 +1,27 @@
+SELECT *FROM "user";
+SELECT *FROM "projetos";
+SELECT *FROM "mensalidades";
+
+INSERT INTO "user" (id, name, email, cpf, data_nascimento, senha, quantidade, cargo, dtassociacao, created_at, updated_at)
+VALUES 
+(1, 'João Silva', 'joao.silva@example.com', '123.456.789-00', '1980-01-01', 'senha123', 2, 'Gerente', '2023-01-01', '2023-10-01 10:00:00', '2023-10-01 10:00:00'),
+(2, 'Maria Oliveira', 'maria.oliveira@example.com', '987.654.321-00', '1990-02-02', 'senha456', 1, 'Analista', '2023-02-01', '2023-10-01 11:00:00', '2023-10-01 11:00:00'),
+(3, 'Carlos Souza', 'carlos.souza@example.com', '456.789.123-00', '1985-03-03', 'senha789', 3, 'Diretor', '2023-03-01', '2023-10-01 12:00:00', '2023-10-01 12:00:00');
+
+
+SELECT MAX(id) FROM "user";
+
+-- Ajustar a sequência para continuar a partir do valor máximo atual
+SELECT setval(pg_get_serial_sequence('"user"', 'id'), (SELECT MAX(id) FROM "user"));
+
+INSERT INTO mensalidades (id, valor, dtvencimento, dtpsagamento, iduser)
+VALUES 
+(1, 100.00, '2023-10-10', '2023-10-09', 1),
+(2, 150.00, '2023-10-15', '2023-10-14', 2),
+(3, 200.00, '2023-10-20', '2023-10-19', 3);
+
+INSERT INTO solicitacoes (id, data, status, iduser)
+VALUES 
+(1, '2023-10-01', 'Pendente', 1),
+(2, '2023-10-02', 'Aprovada', 2),
+(3, '2023-10-03', 'Rejeitada', 3);
