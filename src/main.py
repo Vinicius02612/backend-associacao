@@ -1,6 +1,6 @@
 import uvicorn
-from fastapi import FastAPI, HTTPException,status
-from routers import router_user_associate, router_solictacoes, router_projetos, router_despesas
+from fastapi import FastAPI
+from routers import router_user_associate,router_solictacoes, router_projetos, router_despesas, router_receitas, router_mensalidade
 from connection.database import Base, engine
 
 
@@ -18,6 +18,8 @@ app.include_router(router_user_associate.router)
 app.include_router(router_projetos.router)
 app.include_router(router_solictacoes.router)
 app.include_router(router_despesas.router)
+app.include_router(router_receitas.router)
+app.include_router(router_mensalidade.router)
 
 
 if __name__ == "__main__":
