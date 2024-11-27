@@ -41,10 +41,10 @@ class UserRequest(BaseModel):
 
 class SolicitacaoBase(BaseModel):
     id: int
-    data: str
+    data: date
     status: str
-    idusuario: int
-    usuario: UserResponse
+    iduser: int
+
 
 
     class Config:
@@ -54,19 +54,18 @@ class SolicitacaoResponse(BaseModel):
     id: int
     data: date
     status: str
-    idusuario: int
-    usuario: UserResponse
+    iduser: int
+
  
 
     class Config:
         orm_mode = True
 
 class SolicitacaoRequest(BaseModel):
-    data: str
+    data: date
     status: str
-    idusuario: int
-    usuario: UserRequest
-
+    iduser: int
+    
 
     class Config:
         orm_mode = True
@@ -77,8 +76,8 @@ class MensalidadeBase(BaseModel):
     valor: float
     dtvencimento: date
     dtpagamento: date
-    idSocio: int
-    socio: UserResponse
+    iduser: int
+
 
     class Config:
         orm_mode = True
@@ -88,19 +87,18 @@ class MensalidadeResponse(BaseModel):
     valor: float
     dtvencimento: date
     dtpagamento: date
-    idSocio: int
-    socio: UserResponse
+    iduser: int
+  
 
     class Config:
         orm_mode = True
 
 class MensalidadeRequest(BaseModel):
-    id: int
     valor: float
     dtvencimento: date
     dtpagamento: date
-    idSocio: int
-    socio: UserResponse
+    iduser: int
+ 
 
     class Config:
         orm_mode = True
@@ -161,7 +159,7 @@ class DespesaRequest(BaseModel):
 
 
 
-class Receitas(BaseModel):
+class ReceitasResponse(BaseModel):
     id: int
     valor: float
     data: date
@@ -182,7 +180,7 @@ class ReceitasRequest(BaseModel):
 class Relatorio(BaseModel):
     id: int
     despesa: List[DespesaResponse]
-    receita: List[Receitas]
+    receita: List[ReceitasResponse]
 
     class Config:
         orm_mode = True
@@ -191,7 +189,7 @@ class Relatorio(BaseModel):
 class RelatorioRequest(BaseModel):
     id: int
     despesa: List[DespesaResponse]
-    receita: List[Receitas]
+    receita: List[ReceitasResponse]
 
     class Config:
         orm_mode = True
