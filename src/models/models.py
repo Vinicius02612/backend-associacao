@@ -14,74 +14,74 @@ user_projetos = Table(
 )
 class User(Base):
     __tablename__ = 'user'
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String, index=True)
-    email = Column(String, index=True)
-    cpf = Column(String, index=True)
-    data_nascimento = Column(Date)
-    senha = Column(String)
-    quantidade = Column(Integer)
-    cargo = Column(String)
-    dtassociacao = Column(Date)
+    id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
+    name = Column(String, index=True, nullable=False)
+    email = Column(String, index=True, nullable=False)
+    cpf = Column(String, index=True, nullable=False)
+    data_nascimento = Column(Date, nullable=False)
+    senha = Column(String, nullable=False)
+    quantidade = Column(Integer, nullable=False)
+    cargo = Column(String, nullable=False)
+    dtassociacao = Column(Date, nullable=False)
     _mensalidades = relationship("Mensalidade", backref="User", cascade="all, delete-orphan")
     _projetos = relationship("Projetos", backref="User", cascade="all, delete-orphan")
     _solicitacoes = relationship("Solicitacao", backref="User", cascade="all, delete-orphan")
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now(), nullable=False)
 
 class Solicitacao(Base):
     __tablename__ = 'solicitacoes'
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    data = Column(Date)
-    status = Column(String)
-    iduser = Column(Integer, ForeignKey('user.id'))
+    id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
+    data = Column(Date, nullable=False)
+    status = Column(String, nullable=False)
+    iduser = Column(Integer, ForeignKey('user.id'), nullable=False)
     _user = relationship("User", backref="solicitacoes")
 
 
 
 class Mensalidade(Base):
     __tablename__ = 'mensalidades'
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    valor = Column(Float)
-    dtvencimento = Column(Date)
-    dtpagamento = Column(Date)
-    iduser = Column(Integer, ForeignKey('user.id'))
+    id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
+    valor = Column(Float, nullable=False)
+    dtvencimento = Column(Date, nullable=False)
+    dtpagamento = Column(Date, nullable=False)
+    iduser = Column(Integer, ForeignKey('user.id'), nullable=False)
     # Relacionamento com User
     _socio = relationship("User", backref="mensalidades")
 
 
 class Projetos(Base):
     __tablename__ = 'projetos'
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    titulo = Column(String)
-    dtinicio = Column(Date)
-    dtfim = Column(Date)
+    id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
+    titulo = Column(String, nullable=False)
+    dtinicio = Column(Date, nullable=False)
+    dtfim = Column(Date, nullable=False)
     # Relacionamento com User
-    iduser = Column(Integer, ForeignKey('user.id'))
+    iduser = Column(Integer, ForeignKey('user.id'), nullable=False)
     _socios = relationship("User", secondary="user_projetos", backref="projetos")
     
 class Despesas(Base):
     __tablename__ = 'despesas'
     id = Column(Integer, primary_key=True, autoincrement=True)
     valor = Column(Float)
-    data = Column(Date)
-    origem = Column(String)
+    data = Column(Date, nullable=False)
+    origem = Column(String, nullable=False)
 
 
 
 class Receitas(Base):
     __tablename__ = 'receitas'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
     valor = Column(Float)
-    data = Column(Date)
-    origem = Column(String)
+    data = Column(Date, nullable=False)
+    origem = Column(String, nullable=False)
    
 
 
 class Relatorio(Base):
     __tablename__ = 'relatorios'
-    id = Column(Integer, primary_key=True)
-    data = Column(Date)
+    id = Column(Integer, primary_key=True, nullable=False, autoincrement=True)
+    data = Column(Date, nullable=False, server_default=func.now())
     idDespesa = Column(Integer, ForeignKey('despesas.id'))
     idReceita = Column(Integer, ForeignKey('receitas.id'))
     _despesa = relationship("Despesas", backref="relatorios")
