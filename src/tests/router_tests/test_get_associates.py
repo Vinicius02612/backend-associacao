@@ -1,13 +1,12 @@
 from fastapi.testclient import TestClient
-
 from main import app
 
 client = TestClient(app)
 
-
+print(client)
 
 def test_get_associates():
-    response = client.get("/rotuers/")
+    response = client.get("/routers/")
     assert response.status_code == 200
     assert response.json() == [
         {

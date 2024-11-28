@@ -1,5 +1,5 @@
 from jwt import decode
-from src.services.security import create_access_token, SECRETY_KEY,ALGORITHM
+from services.security import create_access_token, SECRETY_KEY,ALGORITHM
 
 
 def test_create_access_token():
