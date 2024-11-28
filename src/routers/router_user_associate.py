@@ -40,14 +40,17 @@ def create_user_associate(user_request: UserRequest, db: Session = Depends(get_d
     #verificar se o cpf já existe
     user = db.query(User).filter(User.cpf == user_request.cpf).first()
     if user:
-        raise HTTPException(status_code=400, detail="CPF já cadastrado")
-    else:
-        new_user = User(
-            **user_request.model_dump()
-        )
-        db.add(new_user)
-        db.commit()
-        db.refresh(new_user)
+        if user.cpf == user_request.cpf:
+            raise HTTPException(status_code=400, detail="CPF já cadastrado")
+        elif user.email == user_request.email:
+            raise HTTPException(status_code=400, detail="Email já cadastrado")
+
+    new_user = User(
+        **user_request.model_dump()
+    )
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
     return new_user
 
 @router.put("/{id}", response_model=UserResponse)

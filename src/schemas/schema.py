@@ -1,6 +1,8 @@
 from pydantic import BaseModel,field_validator
 from typing import List
 from datetime import date, datetime
+from validate_docbr import CPF
+from services.security import get_password_hash
 
 class UserResponse(BaseModel):
     id: int
@@ -12,9 +14,6 @@ class UserResponse(BaseModel):
     quantidade: int
     cargo: str
     dtassociacao: date
-
-
-  
 
     class Config:
         orm_mode = True
@@ -29,16 +28,23 @@ class UserRequest(BaseModel):
     cargo: str
     dtassociacao: date
 
+    @field_validator("senha")
+    def senha_validate(cls, senha):
+        if len(senha) < 8:
+            raise ValueError("A senha deve ter no mínimo 8 caracteres")
+        hashed_password = get_password_hash(senha)
 
-    @field_validator("cpf", mode="before")
-    def cpf_validator(cls, value):
-        if len(value) != 11:
-            raise ValueError("CPF deve conter 11 digitos")
-        return value
+        return hashed_password
+    class Config:
+        orm_mode = True
+
     
-  
 
-
+    
+class UserToken(BaseModel):
+    access_token:str
+    user: str
+    exp:str
 class SolicitacaoBase(BaseModel):
     id: int
     data: date
