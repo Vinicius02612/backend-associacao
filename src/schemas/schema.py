@@ -2,6 +2,7 @@ from pydantic import BaseModel,field_validator
 from typing import List
 from datetime import date, datetime
 from validate_docbr import CPF
+from email_validator import validate_email, EmailNotValidError
 from services.security import get_password_hash
 
 class UserResponse(BaseModel):
@@ -35,8 +36,38 @@ class UserRequest(BaseModel):
         hashed_password = get_password_hash(senha)
 
         return hashed_password
+    
+    @field_validator("email")
+    def email_validate(cls, email):
+        try:
+            emailInfo = validate_email(email, check_deliverability=False)
+            email = emailInfo.normalized
+        except EmailNotValidError as e:
+            raise ValueError("Email inválido")
+        return email
+    
+    @field_validator("cpf")
+    def validete_cpf(cls, _cpf):
+        cpf = CPF()
+        if not cpf.validate(_cpf):
+            raise ValueError("CPF inválido")
+        
+        new_cpf_mascked = cpf.mask(_cpf)
+        return new_cpf_mascked
+    
+    @field_validator("data_nascimento")
+    def validete_data_nascimento(cls, data_nascimento):
+        data_nascimento = datetime.strptime(data_nascimento, "%Y-%m-%d").date()
+       #usuarui deve ser maior de 16 anos
+        if data_nascimento.year > 2005:
+            raise ValueError("Usuário deve ser maior de 16 anos")
+
+        return data_nascimento
+
     class Config:
         orm_mode = True
+
+   
 
     
 
