@@ -82,8 +82,6 @@ class SolicitacaoBase(BaseModel):
     status: str
     iduser: int
 
-
-
     class Config:
         orm_mode = True
 
