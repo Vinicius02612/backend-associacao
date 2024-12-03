@@ -42,9 +42,10 @@ class Solicitacao(Base):
 class Mensalidade(Base):
     __tablename__ = 'mensalidades'
     id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
-    valor = Column(Float, nullable=False)
+    valor = Column(Float, nullable=False, default=5.00)
     dtvencimento = Column(Date, nullable=False)
     dtpagamento = Column(Date, nullable=False)
+    status = Column(String, nullable=False)
     iduser = Column(Integer, ForeignKey('user.id'), nullable=False)
     # Relacionamento com User
     _socio = relationship("User", backref="mensalidades")
