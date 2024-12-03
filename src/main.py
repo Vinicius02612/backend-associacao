@@ -1,6 +1,6 @@
 import uvicorn
 from fastapi import FastAPI
-from routers import router_user_associate,router_solictacoes, router_projetos, router_despesas, router_receitas, router_mensalidade
+from routers import router_login, router_user_associate,router_solictacoes, router_projetos, router_despesas, router_receitas, router_mensalidade
 from connection.database import Base, engine
 
 
@@ -14,6 +14,8 @@ app = FastAPI()
 async def root():
     return {"message": "Hello World"}
 
+
+app.include_router(router_login.router)
 app.include_router(router_user_associate.router)
 app.include_router(router_projetos.router)
 app.include_router(router_solictacoes.router)
