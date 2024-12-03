@@ -1,4 +1,4 @@
-from pydantic import BaseModel,field_validator
+from pydantic import BaseModel,field_validator, ConfigDict
 from typing import List
 from datetime import date, datetime
 from validate_docbr import CPF
@@ -64,8 +64,7 @@ class UserRequest(BaseModel):
 
         return data_nascimento
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
    
 
@@ -82,8 +81,7 @@ class SolicitacaoBase(BaseModel):
     status: str
     iduser: int
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 class SolicitacaoResponse(BaseModel):
     id: int
@@ -92,9 +90,7 @@ class SolicitacaoResponse(BaseModel):
     iduser: int
 
  
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 class SolicitacaoRequest(BaseModel):
     data: date
@@ -102,8 +98,7 @@ class SolicitacaoRequest(BaseModel):
     iduser: int
     
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class MensalidadeBase(BaseModel):
@@ -111,11 +106,11 @@ class MensalidadeBase(BaseModel):
     valor: float
     dtvencimento: date
     dtpagamento: date
+    status: str
     iduser: int
 
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 class MensalidadeResponse(BaseModel):
     id: int
@@ -125,8 +120,7 @@ class MensalidadeResponse(BaseModel):
     iduser: int
   
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 class MensalidadeRequest(BaseModel):
     valor: float
@@ -135,8 +129,7 @@ class MensalidadeRequest(BaseModel):
     iduser: int
  
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 class ProjetosBase(BaseModel):
     id: int
@@ -145,8 +138,7 @@ class ProjetosBase(BaseModel):
     dtfim: date
     iduser:int
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 class ProjetosResponse(BaseModel):
     id: int
@@ -155,16 +147,15 @@ class ProjetosResponse(BaseModel):
     dtfim: date
     iduser:int
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 class ProjetosRequest(BaseModel):
     titulo: str
     dtinicio: date
     dtfim: date
     iduser:int
-    class Config:
-        orm_mode = True
+    
+    model_config = ConfigDict(from_attributes=True)
 
 class DespesaBase(BaseModel):
     id: int
@@ -172,8 +163,7 @@ class DespesaBase(BaseModel):
     data: date
     origem: str
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 class DespesaResponse(BaseModel):
     id: int
@@ -181,16 +171,14 @@ class DespesaResponse(BaseModel):
     data: date
     origem: str
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 class DespesaRequest(BaseModel):
     valor: float
     data: date
     origem: str
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 
@@ -200,8 +188,7 @@ class ReceitasResponse(BaseModel):
     data: date
     origem: str
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ReceitasRequest(BaseModel):
@@ -209,16 +196,14 @@ class ReceitasRequest(BaseModel):
     data: date
     origem: str
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 class Relatorio(BaseModel):
     id: int
     despesa: List[DespesaResponse]
     receita: List[ReceitasResponse]
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class RelatorioRequest(BaseModel):
@@ -226,5 +211,4 @@ class RelatorioRequest(BaseModel):
     despesa: List[DespesaResponse]
     receita: List[ReceitasResponse]
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
