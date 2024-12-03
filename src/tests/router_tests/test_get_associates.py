@@ -1,5 +1,11 @@
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+
+
 from fastapi.testclient import TestClient
 from main import app
+
 
 client = TestClient(app)
 
@@ -9,30 +15,15 @@ def test_get_associates():
     response = client.get("/routers/")
     assert response.status_code == 200
     assert response.json() == [
-        {
-            "id": 1,
-            "name": "João",
-            "email": "vinicius@nunes",
-            "cpf": "123456789",
-            "data_nascimento": "12/12/12",
-            "senha": "123456",
-            "quantidade": 1,
-            "cargo": "admin",
-            "dtassociacao": "12/12/12",
-            "created_at": "12/12/12",
-            "updated_at": "12/12/12"
-        },
-        {
-            "id": 2,
-            "name": "maria",
-            "email": "maria@nunes",
-            "cpf": "123456789",
-            "data_nascimento": "12/12/12",
-            "senha": "123456",
-            "quantidade": 1,
-            "cargo": "admin",
-            "dtassociacao": "12/12/12",
-            "created_at": "12/12/12",
-            "updated_at": "12/12/12"
-        }
+    {
+        "id": 5,
+        "name": "Vinicius",
+        "email": "vinicius@gmail.com",
+        "cpf": "000.000.00001",
+        "data_nascimento": "2000-02-23",
+        "senha": "$argon2id$v=19$m=65536,t=3,p=4$T3hHRnhy/WDy7425WS9gfQ$EBqkvKqwA5zi0DCtBl0YjMQjvKJmRwpWCFAp/1Z4lhY",
+        "quantidade": 5,
+        "cargo": "PRESIDENTE",
+        "dtassociacao": "2024-11-28"
+    }
     ]
