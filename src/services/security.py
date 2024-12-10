@@ -3,10 +3,8 @@ from jwt import encode
 from pwdlib import PasswordHash
 from zoneinfo import ZoneInfo
 
+from config.config import settings
 
-SECRETY_KEY = 'FSDFSDFSDFSDFSDSDS.ASDASDASDASD'
-ALGORITHM = 'HS256'
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
 pwd_context = PasswordHash.recommended()
 
 
@@ -18,9 +16,9 @@ def create_access_token(data: dict):
         str: token JWT.
     """
     to_encode = data.copy()
-    expire = datetime.now(tz=ZoneInfo('UTC')) + datedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    expire = datetime.now(tz=ZoneInfo('UTC')) + datedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode.update({'exp': expire})
-    encoded_jwt = encode(to_encode, SECRETY_KEY, algorithm=ALGORITHM)
+    encoded_jwt = encode(to_encode, settings.SECRETY_KEY, algorithm=settings.ALGORITHM)
     return encoded_jwt
 
 

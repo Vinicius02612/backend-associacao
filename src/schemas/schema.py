@@ -28,6 +28,8 @@ class UserRequest(BaseModel):
     quantidade: int
     cargo: str
     dtassociacao: date
+    created_at: datetime
+    updated_at: datetime
 
     @field_validator("senha")
     def senha_validate(cls, senha):
@@ -117,6 +119,7 @@ class MensalidadeResponse(BaseModel):
     valor: float
     dtvencimento: date
     dtpagamento: date
+    status: str
     iduser: int
   
 
@@ -126,6 +129,7 @@ class MensalidadeRequest(BaseModel):
     valor: float
     dtvencimento: date
     dtpagamento: date
+    status: str
     iduser: int
  
 
