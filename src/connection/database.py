@@ -4,7 +4,7 @@ from config.config import settings
 
 
 SQLALCHEMY_DATABASE_URL = settings.DATABASE_URL
-print("Database URL is ",SQLALCHEMY_DATABASE_URL)
+print("URL DO BANCO DE DADOS: ",SQLALCHEMY_DATABASE_URL)
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 
 #if you don't want to install postgres or any database, use sqlite, a file system based database, 

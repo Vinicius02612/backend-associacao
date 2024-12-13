@@ -3,21 +3,29 @@ from schemas.schema import SolicitacaoResponse, SolicitacaoRequest
 from typing import List
 from sqlalchemy.orm import Session
 from connection.dependences import get_db
-from models.models import Solicitacao
+from models.models import Solicitacao,User
+from services.security import (get_current_user)
 
 
 router = APIRouter(prefix="/solicitacoes")
 
 #retorna todas as solicitações em forma de lista
 @router.get("/", response_model=List[SolicitacaoResponse])
-def get_solicitacoes(db:Session = Depends(get_db)) -> List[Solicitacao]:
+def get_solicitacoes(db:Session = Depends(get_db), current_user: User = Depends(get_current_user)) -> List[Solicitacao]:
+    if current_user.id != id:
+        raise HTTPException(status_code=403, detail="Usuário não autorizado")
+ 
     solicitacoes = db.query(Solicitacao).all()
     if not solicitacoes:
         raise HTTPException(status_code=404, detail="Não há solicitações cadastradas")
     return solicitacoes
 
 @router.post("/", response_model=SolicitacaoResponse, status_code=201)
-def post_solicitacoes(solicitacao: SolicitacaoRequest, db: Session = Depends(get_db)) -> Solicitacao:
+def post_solicitacoes(solicitacao: SolicitacaoRequest, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)) -> Solicitacao:
+    if current_user.id != id:
+        raise HTTPException(status_code=403, detail="Usuário não autorizado")
+     
+    
     new_solicitacao = Solicitacao(
         **solicitacao.model_dump()
     )
@@ -29,7 +37,11 @@ def post_solicitacoes(solicitacao: SolicitacaoRequest, db: Session = Depends(get
 
 
 @router.put("/{id}", response_model=SolicitacaoResponse)
-def solicitation_update(id:int, solicitacao_request: SolicitacaoRequest, db: Session = Depends(get_db)) -> Solicitacao:
+def solicitation_update(id:int, solicitacao_request: SolicitacaoRequest, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)) -> Solicitacao:
+    if current_user.id != id:
+        raise HTTPException(status_code=403, detail="Usuário não autorizado")
+     
+    
     solicitacao = db.query(Solicitacao).filter(Solicitacao.id == id).first()
     if not solicitacao:
         raise HTTPException(status_code=404, detail="Solicitação não encontrada")
@@ -41,7 +53,11 @@ def solicitation_update(id:int, solicitacao_request: SolicitacaoRequest, db: Ses
     return solicitacao
 
 @router.delete("/{id}", status_code=204)
-def solicitation_delete(id:int, db: Session = Depends(get_db)):
+def solicitation_delete(id:int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    if current_user.id != id:
+        raise HTTPException(status_code=403, detail="Usuário não autorizado")
+     
+    
     solicitacao = db.query(Solicitacao).filter(Solicitacao.id == id).first()
     db.delete(solicitacao)
     db.commit()

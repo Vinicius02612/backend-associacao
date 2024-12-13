@@ -3,14 +3,18 @@ from schemas.schema import ReceitasRequest, ReceitasResponse
 from typing import List
 from sqlalchemy.orm import Session
 from connection.dependences import get_db
-from models.models import Receitas
+from models.models import Receitas,User
+from services.security import (get_current_user)
 
 
 router = APIRouter(prefix="/receitas")
 
 
 @router.get("/", response_model=List[ReceitasResponse])
-def get_receitas(db:Session = Depends(get_db)) -> List[Receitas]:
+def get_receitas(db:Session = Depends(get_db), current_user: User = Depends(get_current_user)) -> List[Receitas]:
+    if current_user.id != id:
+        raise HTTPException(status_code=403, detail="Usuário não autorizado")
+  
     receitas = db.query(Receitas).all()
     if not receitas:
         raise HTTPException(status_code=404, detail="Não há receitas cadastradas")
@@ -18,7 +22,10 @@ def get_receitas(db:Session = Depends(get_db)) -> List[Receitas]:
 
 
 @router.post("/", response_model=ReceitasResponse, status_code=201)
-def post_receitas(receita_request: ReceitasRequest, db: Session = Depends(get_db)) -> List[Receitas]:
+def post_receitas(receita_request: ReceitasRequest, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)) -> List[Receitas]:
+    if current_user.id != id:
+        raise HTTPException(status_code=403, detail="Usuário não autorizado")
+      
     new_receita = Receitas(
         **receita_request.model_dump()
     )
@@ -29,7 +36,10 @@ def post_receitas(receita_request: ReceitasRequest, db: Session = Depends(get_db
     return new_receita
 
 @router.put("/{id}", response_model=ReceitasResponse)
-def receitas_update(id:int, receita_request: ReceitasRequest, db: Session = Depends(get_db)) -> Receitas:
+def receitas_update(id:int, receita_request: ReceitasRequest, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)) -> Receitas:
+    if current_user.id != id:
+        raise HTTPException(status_code=403, detail="Usuário não autorizado")
+      
     receita = db.query(Receitas).filter(Receitas.id == id).first()
     if not receita:
         raise HTTPException(status_code=404, detail="Receita não encontrada")
@@ -41,7 +51,11 @@ def receitas_update(id:int, receita_request: ReceitasRequest, db: Session = Depe
     return receita
 
 @router.delete("/{id}", response_model=ReceitasResponse)
-def receitas_delete(id:int, db: Session = Depends(get_db)) -> Receitas:
+def receitas_delete(id:int, db: Session = Depends(get_db),current_user: User = Depends(get_current_user)) -> Receitas:
+    if current_user.id != id:
+        raise HTTPException(status_code=403, detail="Usuário não autorizado")
+      
+    
     receita = db.query(Receitas).filter(Receitas.id == id).first()
     if not receita:
         raise HTTPException(status_code=404, detail="Receita não encontrada")
@@ -50,7 +64,11 @@ def receitas_delete(id:int, db: Session = Depends(get_db)) -> Receitas:
     return receita
 
 @router.get("/{origma}", response_model=ReceitasResponse)
-def get_receitas_by_titulo(origem:str, db:Session = Depends(get_db)) -> ReceitasResponse:
+def get_receitas_by_titulo(origem:str, db:Session = Depends(get_db),current_user: User = Depends(get_current_user)) -> ReceitasResponse:
+    if current_user.id != id:
+        raise HTTPException(status_code=403, detail="Usuário não autorizado")
+      
+    
     receita = db.query(Receitas).filter(Receitas.origem == origem).first()
     if not receita:
         raise HTTPException(status_code=404, detail="Receita não encontrada")

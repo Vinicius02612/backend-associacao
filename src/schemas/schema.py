@@ -3,7 +3,7 @@ from typing import List
 from datetime import date, datetime
 from validate_docbr import CPF
 from email_validator import validate_email, EmailNotValidError
-from services.security import get_password_hash
+from services.utils import get_password_hash
 
 class UserResponse(BaseModel):
     id: int
@@ -74,9 +74,16 @@ class UserRequest(BaseModel):
 
     
 class UserToken(BaseModel):
+    id:str
+    name: str
+    email: str
+    cpf: str
     access_token:str
+    token_type:str
     user: str
     exp:str
+
+
 class SolicitacaoBase(BaseModel):
     id: int
     data: date

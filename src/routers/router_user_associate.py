@@ -2,8 +2,12 @@ from fastapi import APIRouter,Depends,HTTPException
 from schemas.schema import UserResponse, UserRequest
 from typing import List
 from sqlalchemy.orm import Session
-from connection.dependences import get_db
+from sqlalchemy.sql import select
+from connection.dependences import get_db  as get_session
 from models.models import User 
+from services.security import (get_current_user)
+from http import HTTPStatus
+from sqlalchemy.exc import IntegrityError
 #importar Dependes para usar o banco de dados
 
 
@@ -14,7 +18,11 @@ router = APIRouter(prefix="/users")
 
 
 @router.get("/", response_model=List[UserResponse])
-def get_user_associates(db:Session = Depends(get_db)) -> List[UserResponse]:
+def get_user_associates( db:Session = Depends(get_session), current_user: User = Depends(get_current_user)) -> List[UserResponse]:
+
+    if current_user.id != id:
+        raise HTTPException(status_code=403, detail="Usuário não autorizado")
+    
     user = db.query(User).all()
     if not user:
         raise HTTPException(status_code=404, detail="Não há usuários cadastrados")
@@ -22,62 +30,96 @@ def get_user_associates(db:Session = Depends(get_db)) -> List[UserResponse]:
         return user
 
 @router.get("/{id}", response_model=UserResponse)
-def get_user_associate(id:int, db:Session = Depends(get_db)) -> UserResponse:
+def get_user_associate(id:int, db:Session = Depends(get_session), current_user:User = Depends(get_current_user)) -> UserResponse:
+    
+    if current_user.id != id:
+        raise HTTPException(status_code=403, detail="Usuário não autorizado")
+    
+    
     user = db.query(User).filter(User.id == id).first()
     return user
 
 #rota para buscar usuarui pelo cpf
 @router.get("/cpf/{cpf}", response_model=UserResponse)
-def get_user_by_cpf(cpf:str, db:Session = Depends(get_db)) -> UserResponse:
-    user = db.query(User).filter(User.cpf == cpf).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="Usuário não encontrado")
-    return user
+def get_user_by_cpf(cpf:str, db:Session = Depends(get_session),current_user: User = Depends(get_current_user)) -> UserResponse:
+    if current_user.id != id:
+        raise HTTPException(status_code=403, detail="Usuário não autorizado")
+    else:
+        user = db.query(User).filter(User.cpf == cpf).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="Usuário não encontrado")
+        return user
 
 
 @router.post("/", response_model=UserResponse, status_code=201)
-def create_user_associate(user_request: UserRequest, db: Session = Depends(get_db)) -> User:
-    #verificar se o cpf já existe
-    user = db.query(User).filter(User.cpf == user_request.cpf).first()
-    if user:
-        if user.cpf == user_request.cpf:
-            raise HTTPException(status_code=400, detail="CPF já cadastrado")
-        elif user.email == user_request.email:
-            raise HTTPException(status_code=400, detail="Email já cadastrado")
-
+def create_user_associate(user_request: UserRequest, session: Session = Depends(get_session)) -> User:
+    
+    db_user = session.scalar(
+        select(User).where(
+            (User.cpf == user_request.cpf) | (User.email == user_request.email)
+        )
+    )
+    if db_user:
+        if db_user.cpf == user_request.cpf:
+            raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail="CPF já cadastrado")
+        elif db_user.email == user_request.email:
+            raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail="Email já cadastrado")
+    
     new_user = User(
         **user_request.model_dump()
     )
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
+    session.add(new_user)
+    session.commit()
+    session.refresh(new_user)
     return new_user
 
+
+
 @router.put("/{id}", response_model=UserResponse)
-def update_user(id:int, user_request: UserRequest, db: Session = Depends(get_db)) -> User:
-    user = db.query(User).filter(User.id == id).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="Usuário não encontrado")
-    for key, value in user_request.model_dump().items():
-        setattr(user, key, value)
-    db.commit()
-    db.refresh(user)
-    return user
+def update_user(id:int, user_request: UserRequest, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)) -> User:
+    if current_user.id != id:
+        raise HTTPException(status_code=403, detail="Usuário não autorizado")
+    
+    try:
+        user = session.query(User).filter(User.id == id).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="Usuário não encontrado")
+        for key, value in user_request.model_dump().items():
+            setattr(user, key, value)
+        session.commit()
+        session.refresh(user)
+    
+        return user
+    
+    except IntegrityError:
+        session.rollback()
+        
+        raise HTTPException(
+            status_code=HTTPStatus.CONFLICT, 
+            detail="CPF ou email já cadastrado"
+        )
 
 
 @router.delete("/{id}", status_code=204)
-def delete_user(id:int, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.id == id).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="Usuário não encontrado")
+def delete_user(id:int, session: Session = Depends(get_session),  current_user: User = Depends(get_current_user)):
+    if current_user.id != id:
+        raise HTTPException(status_code=403, detail="Usuário não autorizado")
     else:
-        db.delete(user)
-        db.commit()
-    return None
+        user = session.query(User).filter(User.id == id).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="Usuário não encontrado")
+        else:
+            session.delete(user)
+            session.commit()
+        return None
 
 #rota para buscar um usuario pelo nome ou cpf
 @router.get("/{name_or_cpf}", response_model=UserResponse)
-def get_user_by_name_or_cpf(name_or_cpf:str, db:Session = Depends(get_db)) -> UserResponse:
-    user = db.query(User).filter(User.name == name_or_cpf or User.cpf == name_or_cpf).first()
-    print(user)
-    return user
+def get_user_by_name_or_cpf(name_or_cpf:str, db:Session = Depends(get_session),  current_user: User = Depends(get_current_user)) -> UserResponse:
+    if current_user.id != id:
+        raise HTTPException(status_code=403, detail="Usuário não autorizado")
+    else:
+        user = db.query(User).filter(User.name == name_or_cpf or User.cpf == name_or_cpf).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="Usuário não encontrado")
+        return user
