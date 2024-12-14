@@ -15,8 +15,12 @@ from sqlalchemy import select
 from services.utils import verify_password
 from http import HTTPStatus
 
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+
 pwd_context = PasswordHash.recommended()
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl='token')
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl='login/token')
 
 def create_access_token(data_payload: dict):
     """criar um novo token JWT que será usado para autenticar o usuário.
@@ -62,7 +66,7 @@ def authenticate_user( email: str, password: str, session: Session = Depends(get
 
 
 def get_current_user( session: Session = Depends(get_session), token: str = Depends(oauth2_scheme)):
-    
+    logging.debug(f"Recebido: {token}")
     credentials_exception = HTTPException(
         status_code=HTTPStatus.UNAUTHORIZED,
         detail='Could not validate credentials',
@@ -71,17 +75,18 @@ def get_current_user( session: Session = Depends(get_session), token: str = Depe
    
     try:
         
-        payload = decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
-        print(payload)
+        payload = decode(token, settings.SECRETY_KEY, algorithms=[settings.ALGORITHM])
+        logging.debug(f" PAYLOAD Recebido: {payload}")
+        
         email_user: str = payload.get('sub')
         if not email_user:
             raise credentials_exception
-        token_data = TokenData(email=email_user) 
+        
     except DecodeError:
         raise credentials_exception
 
     user = session.scalar(
-        select(User).where(User.email == token_data.username)
+        select(User).where(User.email == email_user)
     )
 
     if not user:

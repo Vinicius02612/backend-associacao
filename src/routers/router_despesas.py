@@ -19,6 +19,7 @@ def get_despesas(db:Session = Depends(get_db), current_user: User = Depends(get_
         raise HTTPException(status_code=404, detail="Não há despesas cadastradas")
     return despesas
 
+
 @router.post("/", response_model=DespesaResponse, status_code=201)
 def post_despesas(despesa: DespesaRequest, db: Session = Depends(get_db),  current_user: User = Depends(get_current_user)) -> Despesas:
     if current_user.id != id:

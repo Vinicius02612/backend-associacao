@@ -10,7 +10,8 @@ from http import HTTPStatus
 from sqlalchemy.exc import IntegrityError
 #importar Dependes para usar o banco de dados
 
-
+import logging
+logging.basicConfig(level=logging.DEBUG)
 
 router = APIRouter(prefix="/users")
 
@@ -18,11 +19,9 @@ router = APIRouter(prefix="/users")
 
 
 @router.get("/", response_model=List[UserResponse])
-def get_user_associates( db:Session = Depends(get_session), current_user: User = Depends(get_current_user)) -> List[UserResponse]:
+def get_user_associates( db:Session = Depends(get_session)) -> List[UserResponse]:
 
-    if current_user.id != id:
-        raise HTTPException(status_code=403, detail="Usuário não autorizado")
-    
+   
     user = db.query(User).all()
     if not user:
         raise HTTPException(status_code=404, detail="Não há usuários cadastrados")
@@ -42,7 +41,7 @@ def get_user_associate(id:int, db:Session = Depends(get_session), current_user:U
 #rota para buscar usuarui pelo cpf
 @router.get("/cpf/{cpf}", response_model=UserResponse)
 def get_user_by_cpf(cpf:str, db:Session = Depends(get_session),current_user: User = Depends(get_current_user)) -> UserResponse:
-    if current_user.id != id:
+    if current_user.cpf != cpf:
         raise HTTPException(status_code=403, detail="Usuário não autorizado")
     else:
         user = db.query(User).filter(User.cpf == cpf).first()
@@ -53,6 +52,9 @@ def get_user_by_cpf(cpf:str, db:Session = Depends(get_session),current_user: Use
 
 @router.post("/", response_model=UserResponse, status_code=201)
 def create_user_associate(user_request: UserRequest, session: Session = Depends(get_session)) -> User:
+
+    logging.debug(f"Recebido: {user_request}\n")
+
     
     db_user = session.scalar(
         select(User).where(

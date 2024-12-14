@@ -26,8 +26,8 @@ class User(Base):
     _mensalidades = relationship("Mensalidade", backref="User", cascade="all, delete-orphan")
     _projetos = relationship("Projetos", backref="User", cascade="all, delete-orphan")
     _solicitacoes = relationship("Solicitacao", backref="User", cascade="all, delete-orphan")
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    created_at = Column(DateTime(timezone=True), server_default=func.now(),nullable=True)
+    updated_at = Column( DateTime(timezone=True), onupdate=func.now(), nullable=True)
 
 class Solicitacao(Base):
     __tablename__ = 'solicitacoes'
