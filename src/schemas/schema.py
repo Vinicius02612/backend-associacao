@@ -72,14 +72,11 @@ class UserRequest(BaseModel):
 
     
 class UserToken(BaseModel):
-    id:str
-    name: str
     email: str
-    cpf: str
+    cargo:str
     access_token:str
     token_type:str
-    user: str
-    exp:str
+    exp:int
 
 
 class SolicitacaoBase(BaseModel):
@@ -87,6 +84,8 @@ class SolicitacaoBase(BaseModel):
     data: date
     status: str
     iduser: int
+
+    
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -115,6 +114,46 @@ class MensalidadeBase(BaseModel):
     dtpagamento: date
     status: str
     iduser: int
+
+    #definir valores padrão para os campos: valor,status, dtvencimento e dtpagamento, data devencimento deve ser 5 dias uteis após a data de vencimento
+    @field_validator("valor")
+    def validate_valor(cls, valor):
+        if valor < 0:
+            raise ValueError("O valor da mensalidade não pode ser negativo")
+        new_valor = 5.00
+
+        return new_valor
+    
+    @field_validator("status")
+    def validate_status(cls, status):
+        if status not in ["pendente", "pago"]:
+            raise ValueError("Status inválido")
+        new_status = "pendente"
+
+        return new_status
+    
+    @field_validator("dtvencimento")
+    def validate_dtvencimento(cls, dtvencimento):
+        #data de vencimento vai ser no mesmo dia do mes de associação do usuário
+        user = UserResponse()
+        new_dtvencimento = user.dtassociacao
+        dtvencimento = datetime.strptime(new_dtvencimento, "%Y-%m-%d").date()
+        return dtvencimento
+    
+    @field_validator("dtpagamento")
+    def validate_dtpagamento(cls, dtpagamento, status):
+        #data pagamento é dia que usuário paga a mensalidade
+        if status == "pendente":
+            dtpagamento = None
+        else:
+            dtpagamento = datetime.now().date()
+        return dtpagamento
+
+
+
+
+
+
 
 
     model_config = ConfigDict(from_attributes=True)

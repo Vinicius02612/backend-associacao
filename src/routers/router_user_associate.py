@@ -6,6 +6,7 @@ from sqlalchemy.sql import select
 from connection.dependences import get_db  as get_session
 from models.models import User 
 from services.security import (get_current_user)
+from services.permissions import president_permission
 from http import HTTPStatus
 from sqlalchemy.exc import IntegrityError
 #importar Dependes para usar o banco de dados
@@ -103,8 +104,8 @@ def update_user(id:int, user_request: UserRequest, session: Session = Depends(ge
 
 
 @router.delete("/{id}", status_code=204)
-def delete_user(id:int, session: Session = Depends(get_session),  current_user: User = Depends(get_current_user)):
-    if current_user.id != id:
+def delete_user(id:int, session: Session = Depends(get_session),  current_user: User = Depends(president_permission)):
+    if current_user.cargo != "PRESIDENTE":
         raise HTTPException(status_code=403, detail="Usuário não autorizado")
     else:
         user = session.query(User).filter(User.id == id).first()

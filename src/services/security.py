@@ -74,19 +74,24 @@ def get_current_user( session: Session = Depends(get_session), token: str = Depe
     )
    
     try:
-        
+        #{'sub': 'sara1@gmail.com', 'cargo': 'SOCIO', 'exp': 1734359033}
         payload = decode(token, settings.SECRETY_KEY, algorithms=[settings.ALGORITHM])
         logging.debug(f" PAYLOAD Recebido: {payload}")
         
         email_user: str = payload.get('sub')
-        if not email_user:
+        cargo_user: str = payload.get('cargo')
+
+    
+        if  email_user  and cargo_user :
+            token_data = TokenData(email=email_user, cargo=cargo_user, access_token=token, token_type='bearer', exp=payload.get('exp'))
+        else:
             raise credentials_exception
-        
+
     except DecodeError:
         raise credentials_exception
 
     user = session.scalar(
-        select(User).where(User.email == email_user)
+        select(User).where(User.email == token_data.email)
     )
 
     if not user:

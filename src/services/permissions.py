@@ -17,6 +17,15 @@ Fiscais e Suplentes, Associado
 
 """
 
+def check_permission(user_data, required_permission):
+    if user_data.cargo != required_permission:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Usuário não autorizado"
+        )
+    return user_data
+
+
 def president_permission(user_data = Depends(get_current_user)):
     if user_data.cargo != "PRESIDENTE":
         raise HTTPException(
@@ -94,6 +103,16 @@ def fiscal_permission(user_data = Depends(get_current_user)):
 
 def suplente_permission(user_data = Depends(get_current_user)):
     if user_data.cargo != "SUPLENTE":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Usuário não autorizado"
+        )
+    return user_data
+
+
+
+def multiple_permission(user_data, required_permissions):
+    if user_data.cargo not in required_permissions:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Usuário não autorizado"
