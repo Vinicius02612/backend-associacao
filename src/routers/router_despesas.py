@@ -5,13 +5,16 @@ from sqlalchemy.orm import Session
 from connection.dependences import get_db
 from models.models import Despesas, User
 from services.security import (get_current_user)
+from services.permissions import president_permission
+
 
 router = APIRouter(prefix="/despesas")
 
 #retorna todas as despesas em forma de lista
 @router.get("/", response_model=List[DespesaResponse])
-def get_despesas(db:Session = Depends(get_db), current_user: User = Depends(get_current_user)) -> List[Despesas]:
-    if current_user.id != id:
+def get_despesas(db:Session = Depends(get_db), user: User = Depends(president_permission),) -> List[Despesas]:
+    
+    if user.cargo != "PRESIDENTE":
         raise HTTPException(status_code=403, detail="Usuário não autorizado")
     
     despesas = db.query(Despesas).all()
