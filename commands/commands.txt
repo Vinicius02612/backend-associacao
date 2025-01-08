@@ -42,3 +42,13 @@ VALUES
 (1, '2023-10-01', 'Pendente', 1),
 (2, '2023-10-02', 'Aprovada', 2),
 (3, '2023-10-03', 'Rejeitada', 3);
+
+
+
+docker run \ 
+    --name data_base \
+    -e POSTGRES_USER = postgres
+    -e POSTGRES_PASSWORD = vini123
+    -e POSTGRES_DB =db_associates
+    -p POSTGRES_PORT = 5432:5432 \
+    postgres
