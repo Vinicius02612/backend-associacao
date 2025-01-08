@@ -22,11 +22,8 @@ def get_solicitacoes(db:Session = Depends(get_db), current_user: User = Depends(
     return solicitacoes
 
 @router.post("/", response_model=SolicitacaoResponse, status_code=201)
-def post_solicitacoes(solicitacao: SolicitacaoRequest, db: Session = Depends(get_db), current_user: User = Depends(president_permission)) -> Solicitacao:
-    if current_user.cargo != "PRESIDENTE":
-        raise HTTPException(status_code=403, detail="Usuário não autorizado")
-     
-    
+def post_solicitacoes(solicitacao: SolicitacaoRequest, db: Session = Depends(get_db)) -> Solicitacao:
+   
     new_solicitacao = Solicitacao(
         **solicitacao.model_dump()
     )
