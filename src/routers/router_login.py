@@ -17,9 +17,11 @@ logging.basicConfig(level=logging.DEBUG)
 router = APIRouter(prefix="/login")
 
 
+@router.get("/")
+async def view_login():
+    return {"message": "Hello Login"}
 
-
-@router.post("/token")
+@router.post("/")
 async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], session: Session = Depends(get_session)):
     logging.debug(f"\nDados Recebido de form_data: {form_data.username}\n")
     user = session.scalar(select(User).where(User.email == form_data.username))
