@@ -20,10 +20,8 @@ router = APIRouter(prefix="/users")
 
 
 @router.get("/", response_model=List[UserResponse])
-def get_user_associates( db:Session = Depends(get_session), current_user:User = Depends(president_permission)) -> List[UserResponse]:
+def get_user_associates( db:Session = Depends(get_session)) -> List[UserResponse]:
 
-    if current_user.cargo != "PRESIDENTE":
-        raise HTTPException(status_code=403, detail="Usuário não autorizado")
     user = db.query(User).all()
     if not user:
         raise HTTPException(status_code=404, detail="Não há usuários cadastrados")
@@ -41,7 +39,7 @@ def get_user_associate(id:int, db:Session = Depends(get_session), current_user:U
     return user
 
 #rota para buscar usuarui pelo cpf
-@router.get("/cpf/{cpf}", response_model=UserResponse)
+@router.get("/{cpf}", response_model=UserResponse)
 def get_user_by_cpf(cpf:str, db:Session = Depends(get_session),current_user: User = Depends(president_permission)) -> UserResponse:
     if current_user.cargo != "PRESIDENTE":
         raise HTTPException(status_code=403, detail="Usuário não autorizado")
