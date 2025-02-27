@@ -1,11 +1,12 @@
 from datetime import datetime, timedelta as datedelta
 from jwt import encode
+from jose import JWTError
 from pwdlib import PasswordHash
 from zoneinfo import ZoneInfo
 from sqlalchemy.orm import Session
 from config.config import settings
 from connection.dependences import get_db  as get_session
-from fastapi import Depends,HTTPException
+from fastapi import Depends,HTTPException, status
 from http import HTTPStatus
 from jwt import encode, decode, DecodeError
 from fastapi.security import OAuth2PasswordBearer
@@ -20,7 +21,7 @@ import logging
 logging.basicConfig(level=logging.DEBUG)
 
 pwd_context = PasswordHash.recommended()
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl='login/token')
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login/token")
 
 def create_access_token(data_payload: dict):
     """criar um novo token JWT que será usado para autenticar o usuário.
@@ -41,7 +42,28 @@ def create_access_token(data_payload: dict):
 
 
 
-def authenticate_user( email: str, password: str, session: Session = Depends(get_session)):
+def verify_token(token: str):
+    """Verifica se o token é válido.
+    Args:
+        token (str): token JWT.
+    Returns:
+        TokenData: dados do token.
+    """
+    try:
+        payload = decode(token, settings.SECRETY_KEY, algorithms=[settings.ALGORITHM])
+        email = payload.get('sub')
+
+        token_data = TokenData(email=email)
+    except JWTError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail='Could not validate credentials',
+            headers={'WWW-Authenticate': 'Bearer'},
+        )
+    return token_data
+
+
+def authenticate_user( db:Session,  email: str, password: str):
     """Autentica o usuário.
     Args:
         email (str): email do usuário.
@@ -51,47 +73,39 @@ def authenticate_user( email: str, password: str, session: Session = Depends(get
         User: usuário autenticado.
     
     """
-    user_email = session.scalar(select(User).where(User.email == email))
-    print(user_email)
+    user_email = db.query(User).filter(User.email == email).first()
+    
     if not user_email or not verify_password(password, user_email.senha):
         raise HTTPException(
-            status_code=HTTPStatus.UNAUTHORIZED,
+            status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Usuario ou senha inválidos",
             headers={"WWW-Authenticate": "Bearer"},
         )
-   
-    return user_email
+    else:
+        return user_email
 
 
 
 
 def get_current_user( session: Session = Depends(get_session), token: str = Depends(oauth2_scheme)):
-    logging.debug(f"Recebido: {token}")
     credentials_exception = HTTPException(
         status_code=HTTPStatus.UNAUTHORIZED,
         detail='Could not validate credentials',
         headers={'WWW-Authenticate': 'Bearer'},
     )
-   
-    try:
-        #{'sub': 'sara1@gmail.com', 'cargo': 'SOCIO', 'exp': 1734359033}
-        payload = decode(token, settings.SECRETY_KEY, algorithms=[settings.ALGORITHM])
-        logging.debug(f" PAYLOAD Recebido: {payload}")
-        
-        email_user: str = payload.get('sub')
-        cargo_user: str = payload.get('cargo')
 
-    
-        if  email_user  and cargo_user :
-            token_data = TokenData(email=email_user, cargo=cargo_user, access_token=token, token_type='bearer', exp=payload.get('exp'))
-        else:
+    try:
+        payload = decode(token, settings.SECRETY_KEY, algorithms=[settings.ALGORITHM])
+        subject_email = payload.get('sub')
+
+        if not subject_email:
             raise credentials_exception
 
     except DecodeError:
         raise credentials_exception
 
     user = session.scalar(
-        select(User).where(User.email == token_data.email)
+        select(User).where(User.email == subject_email)
     )
 
     if not user:
