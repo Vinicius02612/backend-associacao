@@ -54,6 +54,8 @@ def projetos_delete(id:int, db: Session = Depends(get_db),permission: User = Dep
         raise HTTPException(status_code=403, detail="Usuário não autorizado")
     
     projetos = db.query(Projetos).filter(Projetos.id == id).first()
+    if not projetos:
+        raise HTTPException(status_code=404, detail="Projeto não encontrado")
     db.delete(projetos)
     db.commit()
     return projetos
