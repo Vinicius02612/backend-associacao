@@ -1,13 +1,11 @@
 from fastapi import APIRouter,Depends,HTTPException,status
 from fastapi.security import  OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from typing import Annotated
-from services.security import create_access_token
+from services.security import create_access_token,verify_password,authenticate_user
 from sqlalchemy.orm import Session
 from connection.dependences import get_db as get_session
-from services.security import verify_password
 from sqlalchemy import select
 from models.models import User
-from services.security import (get_current_user)
 from schemas.schema import UserToken
 import logging
 
@@ -21,10 +19,11 @@ router = APIRouter(prefix="/login")
 async def view_login():
     return {"message": "Hello Login"}
 
-@router.post("/")
-async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], session: Session = Depends(get_session)):
-    logging.debug(f"\nDados Recebido de form_data: {form_data.username}\n")
-    user = session.scalar(select(User).where(User.email == form_data.username))
+@router.post("/token", response_model=UserToken)
+async def login_for_access_token( form_data: Annotated[OAuth2PasswordRequestForm, Depends()], session: Session = Depends(get_session)):
+   
+    user  = authenticate_user(session, form_data.username, form_data.password)
+   
 
     if not user:
         raise HTTPException(
@@ -40,8 +39,14 @@ async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm,
             headers={"WWW-Authenticate": "Bearer"},
         )
     access_token = create_access_token(
-        data_payload={"sub": user.email, "cargo": user.cargo}
+        data_payload={"sub": user.email, "cargo": user.cargo,"token_type": "Bearer", "exp": 30}
     )
-    return {"access_token": access_token, "token_type": "Bearer"}
 
-
+    
+    return {
+        "email": user.email,
+        "cargo": user.cargo,
+        "access_token": access_token,
+        "token_type": "Bearer",
+        "exp": 30
+    }
