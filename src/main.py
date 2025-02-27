@@ -18,7 +18,3 @@ app.include_router(router_solictacoes.router)
 app.include_router(router_despesas.router)
 app.include_router(router_receitas.router)
 app.include_router(router_mensalidade.router)
-
-
-if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=9000)
